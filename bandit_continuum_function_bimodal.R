@@ -33,9 +33,12 @@ ContinuumBanditBimodal <- R6::R6Class(
       context
     },
     get_reward = function(t, context, action) {
+      reward <- self$arm_function(action$choice, self$mu1, self$sd1, self$mu2, self$sd2)
+      optimal_reward <- self$arm_function(self$mu2, self$mu1, self$sd1, self$mu2, self$sd2)
+
       reward  <- list(
-        reward                   = self$arm_function(action$choice, self$mu1, self$sd1, self$mu2, self$sd2),
-        optimal_reward           = self$mu2
+       reward = reward,
+       optimal_reward = optimal_reward
       )
     }
   )
