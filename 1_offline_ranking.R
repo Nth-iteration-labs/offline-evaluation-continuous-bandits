@@ -29,8 +29,8 @@ set.seed(1)
 
 ### Set number of interactions (horizon) and number of repeats (simulations)
 ### In the paper we used a horizon of 10000 and 10000 simulations
-horizon            <- 10
-simulations        <- 1
+horizon            <- 10000
+simulations        <- 1000
 
 ### Set up two different bandits
 bandits <- c(ContinuumBanditUnimodal$new(), ContinuumBanditBimodal$new())
@@ -53,7 +53,7 @@ bimodal_data <- function(x){
     return(list("data" = y1 + y2 + rnorm(length(x), 0, 0.01), "max" = maxval))
 }
 
-functions <- list(list("unimodal", bimodal_data))#, list("bimodal", bimodal_data))
+functions <- list(list("unimodal", unimodal_data), list("bimodal", bimodal_data))
 
 ### Set up different deltas for the delta method. If delta = 0 we do online
 #deltas <- c(0, 0.01, 0.05, 0.1, 0.2, 0.5)
@@ -94,6 +94,7 @@ for (f in functions){
                                           save_interval = 10)$run()
       
       histories[[i]] <- history 
+      history$save(paste0(d,f[[1]],".RData"))
  }
  
 #pdf(paste0("offline_",f[[1]],".pdf"))

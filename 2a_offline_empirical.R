@@ -63,11 +63,11 @@ agents <- list(Agent$new(UniformRandomPolicy$new(), bandit),
 history            <- Simulator$new(agents      = agents,
                                   horizon     = horizon,
                                   simulations = simulations,
-                                  do_parallel = FALSE,
+                                  do_parallel = TRUE,
                                   save_interval = 10)$run()
 
 
 cairo_ps("offline_empirical.eps")
-plot(history, regret=FALSE, type="cumulative", legend_labels = c("UR", "E-First", "LiF", "TBL"), disp="ci")     
+plot(history, regret=FALSE, type="cumulative", legend_labels = c("UR", "E-First", "LiF", "TBL"), disp="ci", trunc_per_agent = FALSE)     
 dev.off()
 
