@@ -8,7 +8,7 @@
 library(contextual)
 library(here)
 library(ggplot2)
-library(cowplot)
+library(patchwork)
 
 source("./bandit_continuum_function_unimodal.R")
 source("./bandit_continuum_function_bimodal.R")
@@ -30,10 +30,7 @@ set.seed(1)
 ### Set number of interactions (horizon) and number of repeats (simulations)
 ### In the paper we used a horizon of 10000 and 10000 simulations
 horizon            <- 10000
-simulations        <- 1000
-
-### Set up two different bandits
-bandits <- c(ContinuumBanditUnimodal$new(), ContinuumBanditBimodal$new())
+simulations        <- 5000
 
 ### Set up functions to make offline dataset
 unimodal_data <- function(x){
@@ -82,10 +79,10 @@ for (f in functions){
           bandit <- OnlineOfflineContinuumBandit$new(FUN = f[[2]], max_bool = TRUE, delta = d, horizon = horizon)
       }
 
-      agents <- list(Agent$new(UniformRandomPolicy$new(), bandit),
-                     Agent$new(EpsilonFirstLinearRegressionPolicy$new(), bandit),
-                     Agent$new(LifPolicyRandstart$new(int_time, amplitude, learn_rate, omega), bandit),
-                     Agent$new(ThompsonBayesianLinearPolicy$new(), bandit))
+      agents <- list(Agent$new(UniformRandomPolicy$new(), bandit, name = "UR"),
+                     Agent$new(EpsilonFirstLinearRegressionPolicy$new(), bandit, name = "E-First"),
+                     Agent$new(LifPolicyRandstart$new(int_time, amplitude, learn_rate, omega), bandit, name = "LiF"),
+                     Agent$new(ThompsonBayesianLinearPolicy$new(), bandit, name = "TBL"))
 
       history            <- Simulator$new(agents      = agents,
                                           horizon     = horizon,
@@ -93,10 +90,40 @@ for (f in functions){
                                           do_parallel = TRUE,
                                           save_interval = 10)$run()
       
-      histories[[i]] <- history 
-      history$save(paste0(d,f[[1]],".RData"))
+      history$update_statistics()
+
+      histories[[i]] <- history$get_cumulative_data()
+      colnames(histories[[i]])[which(names(histories[[i]]) == "agent")] <- "Policy"
  }
- 
+
+plots <- vector(mode='list', length=length(deltas))
+
+for(i in 1:length(deltas)){
+    if(deltas[i] == 0){
+        g <- ggplot(histories[[i]]) + 
+             geom_line(aes(y = cum_regret, x = t, color=Policy)) +
+             geom_ribbon(aes(ymin = cum_regret - cum_regret_ci, ymax = cum_regret + cum_regret_ci, x = t, fill=Policy), alpha = 0.2, show.legend=FALSE) +
+             ylab("Cumulative regret") +
+             xlab("Time") +
+             theme(legend.position = "none") +
+             ggtitle("Online")
+        plots[[i]] <- g
+    } else { 
+        g <- ggplot(histories[[i]]) +
+             geom_line(aes(y = cum_regret, x = t, color=Policy)) +
+             geom_ribbon(aes(ymin = cum_regret - cum_regret_ci, ymax = cum_regret + cum_regret_ci, x = t, fill=Policy), alpha = 0.2, show.legend=FALSE) +
+             ylab("Cumulative regret") +
+             xlab("Time") +
+             theme(legend.position = "none") +
+             ggtitle(paste0("Delta ", deltas[i]))
+        plots[[i]] <- g
+    }
+
+}
+
+p <- plots[[1]] + plots[[2]] + plots[[3]] + plots[[4]] + plots[[5]] + plots[[6]] + plot_layout(guides = "collect") & theme(legend.position = "bottom")
+ggsave(paste0(f[[1]],"_offline.pdf"), p, device="pdf", width=10, height=7)
+
 #pdf(paste0("offline_",f[[1]],".pdf"))
 
 #layout(matrix(c(1,2,3,4,5,6,7,7,7), ncol=3, byrow=TRUE), heights=c(3, 3, 1))
