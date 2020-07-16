@@ -55,10 +55,10 @@ omega <- 1
 ### Set up all agents with different amplitudes and run them for each bandit
 bandit <- OfflineContinuumBandit$new(data = dt, max_bool = TRUE, delta = deltas, horizon = horizon)
 
-agents <- list(Agent$new(UniformRandomPolicy$new(), bandit),
-             Agent$new(EpsilonFirstLinearRegressionPolicy$new(), bandit),
-             Agent$new(LifPolicyRandstart$new(int_time, amplitude, learn_rate, omega), bandit),
-             Agent$new(ThompsonBayesianLinearPolicy$new(), bandit))
+agents <- list(Agent$new(UniformRandomPolicy$new(), bandit, name = "UR"),
+             Agent$new(EpsilonFirstLinearRegressionPolicy$new(epsilon = 100), bandit, name = "E-First"),
+             Agent$new(LifPolicyRandstart$new(int_time, amplitude, learn_rate, omega), bandit, name = "LiF"),
+             Agent$new(ThompsonBayesianLinearPolicy$new(), bandit, name = "TBL"))
 
 history            <- Simulator$new(agents      = agents,
                                   horizon     = horizon,
@@ -67,7 +67,17 @@ history            <- Simulator$new(agents      = agents,
                                   save_interval = 10)$run()
 
 
-cairo_ps("offline_empirical.eps")
-plot(history, regret=FALSE, type="cumulative", legend_labels = c("UR", "E-First", "LiF", "TBL"), disp="ci", trunc_per_agent = FALSE)     
-dev.off()
+history$update_statistics()
 
+history_cumulative <- history$get_cumulative_data()
+colnames(history_cumulative)[which(names(history_cumulative) == "agent")] <- "Policy"
+
+g <- ggplot(history_cumulative) + 
+     geom_line(aes(y = cum_reward, x = t, color=Policy)) +
+     geom_ribbon(aes(ymin = cum_reward - cum_reward_ci, ymax = cum_reward + cum_reward_ci, x = t, fill=Policy), alpha = 0.2, show.legend=FALSE) +
+     ylab("Cumulative reward") +
+     xlab("Time") +
+     theme(legend.position = "none") +
+     theme_bw(base_size = 15) 
+ggsave("offline_empirical.pdf", g, device="pdf", width=10, height=7)
+print(g)

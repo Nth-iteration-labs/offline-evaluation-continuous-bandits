@@ -27,7 +27,7 @@ set.seed(1)
 ### Set number of interactions (horizon) and number of repeats (simulations)
 ### In the paper we used a horizon of 10000 and 10000 simulations
 horizon            <- 10000
-simulations        <- 10
+simulations        <- 1000
 
 ### Set TBL specific parameters
 J <- matrix(c(5, 4, -4), nrow=1, ncol=3, byrow = TRUE)

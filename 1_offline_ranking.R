@@ -25,29 +25,33 @@ source("./policy_ur.R")
 #############################################################
 
 ### Set seed
-set.seed(1)
+set.seed(333)
 
 ### Set number of interactions (horizon) and number of repeats (simulations)
 ### In the paper we used a horizon of 10000 and 10000 simulations
 horizon            <- 10000
-simulations        <- 5000
+simulations        <- 1000
 
 ### Set up functions to make offline dataset
 unimodal_data <- function(x){
     c1 <- runif(1, 0.25, 0.75)
     c2 <- 1
-    return(list("data" = -(x - c1) ^2 + c2 + rnorm(length(x), 0, 0.01), "max" = c2))
+    return(list("data" = -(x - c1) ^2 + c2 + rnorm(length(x), 0, 0.05), "max" = c2))
 }
 
 bimodal_data <- function(x){
     mu1 <- runif(1, 0.15, 0.2)
-    sd1 <- runif(1, 0.1, 0.15)
+    sd1 <- runif(1, 0.05, 0.15)
     mu2 <- runif(1, 0.7, 0.85)
-    sd2 <- runif(1, 0.1, 0.15)
+    sd2 <- runif(1, 0.05, 0.15)
     y1 <- truncnorm::dtruncnorm(x, a=0, b=1, mean=mu1, sd=sd1)
     y2 <- truncnorm::dtruncnorm(x, a=0, b=1, mean=mu2, sd=sd2)
-    maxval <- truncnorm::dtruncnorm(mu2, a=0, b=1, mean=mu1, sd=sd1) + truncnorm::dtruncnorm(mu2, a=0, b=1, mean=mu2, sd=sd2)
-    return(list("data" = y1 + y2 + rnorm(length(x), 0, 0.01), "max" = maxval))
+    if (sd2 >= sd1) {
+        maxval <- truncnorm::dtruncnorm(mu2, a=0, b=1, mean=mu1, sd=sd1) + truncnorm::dtruncnorm(mu2, a=0, b=1, mean=mu2, sd=sd2)
+    } else {
+        maxval <- truncnorm::dtruncnorm(mu1, a=0, b=1, mean=mu1, sd=sd1) + truncnorm::dtruncnorm(mu2, a=0, b=1, mean=mu2, sd=sd2)
+    }
+    return(list("data" = y1 + y2 + rnorm(length(x), 0, 0.05), "max" = maxval))
 }
 
 functions <- list(list("unimodal", unimodal_data), list("bimodal", bimodal_data))
@@ -57,8 +61,8 @@ functions <- list(list("unimodal", unimodal_data), list("bimodal", bimodal_data)
 deltas <- c(0, 0.5, 0.2, 0.1, 0.05, 0.01)
 
 ### Parameters for LiF
-int_time <- 10
-amplitude <- 0.035
+int_time <- 25
+amplitude <- 0.05
 learn_rate <- 2*pi/int_time 
 omega <- 1
 
@@ -106,6 +110,7 @@ for(i in 1:length(deltas)){
              ylab("Cumulative regret") +
              xlab("Time") +
              theme(legend.position = "none") +
+             theme_bw(base_size = 15) +
              ggtitle("Online")
         plots[[i]] <- g
     } else { 
@@ -115,6 +120,7 @@ for(i in 1:length(deltas)){
              ylab("Cumulative regret") +
              xlab("Time") +
              theme(legend.position = "none") +
+             theme_bw(base_size = 15) +
              ggtitle(paste0("Delta ", deltas[i]))
         plots[[i]] <- g
     }
