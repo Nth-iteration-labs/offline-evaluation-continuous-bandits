@@ -1,5 +1,5 @@
 # offline-parameter-tuning
-Code for the offline paramater tuning paper (submitted to IDA 2020)
+Code for the offline paramater tuning paper
 
 * For the replications of the plots of the first simulation study, see 1_offline_ranking.R.
 * For the replications of the plots of the second simulation study, see 2_offline_par_lif.R and 3_offline_par_tbl.R
