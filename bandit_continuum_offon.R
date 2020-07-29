@@ -21,8 +21,12 @@ OnlineOfflineContinuumBandit <- R6::R6Class(
     post_initialization = function() {
       self$choice <- runif(self$horizon, min=0, max=1)
       temp_data <- self$arm_function(self$choice)
-      self$S <- data.frame(self$choice, temp_data$data)
-      self$maxval <- temp_data$max
+      if(self$max_bool == TRUE){
+          self$S <- data.frame(self$choice, temp_data$data)
+          self$maxval <- temp_data$max
+      } else {
+          self$S <- data.frame(self$choice, temp_data)
+      }
       self$S <- self$S[sample(nrow(self$S)),]
       colnames(self$S) <- c('choice', 'reward')
     },

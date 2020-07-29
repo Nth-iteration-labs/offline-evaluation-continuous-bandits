@@ -130,21 +130,4 @@ for(i in 1:length(deltas)){
 p <- plots[[1]] + plots[[2]] + plots[[3]] + plots[[4]] + plots[[5]] + plots[[6]] + plot_layout(guides = "collect") & theme(legend.position = "bottom")
 ggsave(paste0(f[[1]],"_offline.pdf"), p, device="pdf", width=10, height=7)
 
-#pdf(paste0("offline_",f[[1]],".pdf"))
-
-#layout(matrix(c(1,2,3,4,5,6,7,7,7), ncol=3, byrow=TRUE), heights=c(3, 3, 1))
-#par(oma=c(4,4,2,2), las=1)
-##par(cex=1.05)
-#for(hist in histories){
-#    plot(hist, type="cumulative", no_par = TRUE, disp="ci", legend=FALSE, use_colors=TRUE, trunc_per_agent = FALSE, xlab = "", ylab = "")
-#}
-#par(cex=1.05)
-#mtext("Time step", 1, 3, outer=TRUE, las = 0)
-#mtext("Cumulative regret", 2, 3, outer=TRUE, las = 0)
-#par(mar=c(1,1,1,1))
-#plot.new()
-#legend(x="center", ncol=4,legend=c("UR","E-First","LiF", "TBL"), fill=c("#F8766D", "#7CAE00", "#00BFC4", "#C77CFF"), title="Legend")
-#
-#dev.off()
 }
-
